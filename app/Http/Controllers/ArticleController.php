@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ArticleController extends Controller
 {
@@ -24,14 +25,15 @@ class ArticleController extends Controller
 
     // SELESAI
     public function create() {
+        $fileName = request() -> file('imageFile') -> getClientOriginalName();
+        request() -> file('image') -> storeAs('post-image', $fileName);
+        
         $article = new Article;
         $article -> title = request('title');
         $article -> content = request('content');
-        $article -> image = request('image');
-
+        $article -> image = $fileName;
         $article -> save();
-        // sudah bisa tapi belum selesai
-        request() -> file('image') -> storeAs('post-image', request('image'));
+
         return response()->json(
             [
                 'status' => 200,
@@ -55,18 +57,21 @@ class ArticleController extends Controller
 
     // belum selesai
     public function update($id) {
+        $fileName = request() -> file('imageFile') -> getClientOriginalName();
+        request() -> file('image') -> storeAs('post-image', $fileName);
+        
         $article = new Article;
         $article -> find($id) -> update([
             'title' => request('title'),
             'content' => request('content'),
-            'image' => request('image')
+            'image' => $fileName
         ]);
 
         return response()->json(
             [
                 'status' => 200,
                 'message' => "Article has been successfully updated",
-                'data' => $article -> latest() -> first()
+                'data' => $article -> find($id)
             ]
         );
     }
